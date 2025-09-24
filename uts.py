@@ -15,39 +15,42 @@ class Calculator(QWidget):
 
     def initUI(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(7, 7, 7, 7)  
+        main_layout.setSpacing(7)  
 
-        # Jejak perhitungan (atas)
+        # ================================
+        # KETENTUAN: LINEEDIT
+        # ================================
+        # Jejak perhitungan (atas) - LineEdit 1
         self.history_display = QLineEdit()
         self.history_display.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.history_display.setReadOnly(True)
-        self.history_display.setFixedHeight(35)
-        self.history_display.setFont(QFont("Arial", 12))
+        self.history_display.setFixedHeight(23)  
+        self.history_display.setFont(QFont("Arial", 10))  
         self.history_display.setStyleSheet("""
             QLineEdit {
                 background: #fafafa;
                 color: #444;
                 border: 1px solid #bbb;
-                border-radius: 6px;
-                padding: 4px 8px;
+                border-radius: 4px;  
+                padding: 3px 5px;    
             }
         """)
         main_layout.addWidget(self.history_display)
 
-        # Layar kalkulator utama (angka besar)
+        # Layar kalkulator utama (angka besar) - LineEdit 2
         self.display = QLineEdit()
         self.display.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.display.setReadOnly(True)
-        self.display.setFixedHeight(70)
-        self.display.setFont(QFont("Arial", 20, QFont.Weight.Bold))
+        self.display.setFixedHeight(47)  
+        self.display.setFont(QFont("Arial", 16, QFont.Weight.Bold))  
         self.display.setStyleSheet("""
             QLineEdit {
                 background: #ffffff;
                 color: #000000;
                 border: 2px solid #888;
-                border-radius: 10px;
-                padding: 10px;
+                border-radius: 7px;  
+                padding: 7px;        
             }
         """)
         main_layout.addWidget(self.display)
@@ -55,23 +58,27 @@ class Calculator(QWidget):
         # Kotak riwayat lengkap
         self.history_log = QTextEdit()
         self.history_log.setReadOnly(True)
-        self.history_log.setFixedHeight(120)
+        self.history_log.setFixedHeight(80)  
         self.history_log.setStyleSheet("""
             QTextEdit {
                 background: #fefefe;
                 border: 1px solid #ddd;
-                border-radius: 6px;
+                border-radius: 4px;  
                 color: #333;
             }
         """)
         main_layout.addWidget(self.history_log)
 
-        # Grid tombol angka & operator
+        # ================================
+        # KETENTUAN: GRID LAYOUT 
+        # (Untuk tombol angka dan operator)
+        # ================================
         grid = QGridLayout()
-        grid.setSpacing(10)
+        grid.setSpacing(7)  
 
-        # Aliya: Mengubah tombol angka menjadi 0-8
-        #komen
+        # ================================
+        # KETENTUAN: BUTTON DENGAN NOMOR SESUAI NIM (0-8)
+        # ================================
         numbers = [
             ('7', 0, 0), ('8', 0, 1),
             ('5', 1, 0), ('6', 1, 1),
@@ -87,13 +94,13 @@ class Calculator(QWidget):
                 text, row, col, rowspan, colspan = item
 
             btn = QPushButton(text)
-            btn.setFixedSize(80, 60)
-            btn.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+            btn.setFixedSize(53, 40)   
+            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))  
             btn.setStyleSheet("""
                 QPushButton {
                     background: #ffffff;
                     border: 2px solid #ccc;
-                    border-radius: 10px;
+                    border-radius: 7px;  
                 }
                 QPushButton:hover {
                     background: #f0f0f0;
@@ -102,6 +109,7 @@ class Calculator(QWidget):
             btn.clicked.connect(lambda checked, t=text: self.add_to_display(t))
             grid.addWidget(btn, row, col, rowspan, colspan)
 
+        # Tombol operator dalam grid
         operators = [
             ('+', 0, 2), ('-', 1, 2),
             ('*', 2, 2), ('/', 3, 2),
@@ -110,32 +118,35 @@ class Calculator(QWidget):
 
         for text, row, col in operators:
             btn = QPushButton(text)
-            btn.setFixedSize(80, 60)
-            btn.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+            btn.setFixedSize(53, 40)  
+            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))  
             if text == "=":
-                btn.setStyleSheet("background:#4CAF50; color:white; border-radius:10px;")
+                btn.setStyleSheet("background:#4CAF50; color:white; border-radius:7px;")  
             else:
-                btn.setStyleSheet("background:#2196F3; color:white; border-radius:10px;")
+                btn.setStyleSheet("background:#2196F3; color:white; border-radius:7px;")  
             btn.clicked.connect(lambda checked, t=text: self.handle_operator(t))
             grid.addWidget(btn, row, col)
 
         main_layout.addLayout(grid)
 
-        # Tombol tambahan (horizontal)
+        # ================================
+        # KETENTUAN: KOMBINASI HORIZONTAL LAYOUT
+        # (Untuk tombol tambahan: Info, Clear, Backspace)
+        # ================================
         hbox = QHBoxLayout()
         btn_info = QPushButton("Info")
-        btn_info.setStyleSheet("background:#ff9800; color:white; border-radius:10px;")
-        btn_info.setFixedHeight(50)
+        btn_info.setStyleSheet("background:#ff9800; color:white; border-radius:7px;")  
+        btn_info.setFixedHeight(33)  
         btn_info.clicked.connect(self.show_info)
 
         btn_clear = QPushButton("Clear")
-        btn_clear.setStyleSheet("background:#f44336; color:white; border-radius:10px;")
-        btn_clear.setFixedHeight(50)
+        btn_clear.setStyleSheet("background:#f44336; color:white; border-radius:7px;")  
+        btn_clear.setFixedHeight(33)  
         btn_clear.clicked.connect(self.clear_all)
 
         btn_back = QPushButton("⌫")
-        btn_back.setStyleSheet("background:#9c27b0; color:white; border-radius:10px;")
-        btn_back.setFixedHeight(50)
+        btn_back.setStyleSheet("background:#9c27b0; color:white; border-radius:7px;")  
+        btn_back.setFixedHeight(33)  
         btn_back.clicked.connect(self.backspace_display)
 
         hbox.addWidget(btn_info)
@@ -143,6 +154,10 @@ class Calculator(QWidget):
         hbox.addWidget(btn_back)
         main_layout.addLayout(hbox)
 
+        # ================================
+        # KETENTUAN: KOMBINASI VERTICAL LAYOUT
+        # (Layout utama yang menampung semua komponen)
+        # ================================
         self.setLayout(main_layout)
 
     def add_to_display(self, text):
@@ -199,13 +214,20 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Kalkulator Desktop - PyQt6")
-        self.setGeometry(300, 200, 350, 600)
+        self.setGeometry(300, 200, 233, 400)  
 
         self.calculator = Calculator()
+        
+        # ================================
+        # KETENTUAN: TAB WIDGET
+        # ================================
         tabs = QTabWidget()
         tabs.addTab(self.calculator, "Kalkulator")
         self.setCentralWidget(tabs)
 
+        # ================================
+        # KETENTUAN: MENU DENGAN OPERASI ARITMATIKA
+        # ================================
         menubar = self.menuBar()
         operasi_menu = menubar.addMenu("Operasi Matematika")
 
