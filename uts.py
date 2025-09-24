@@ -71,6 +71,7 @@ class Calculator(QWidget):
         grid.setSpacing(10)
 
         # Aliya: Mengubah tombol angka menjadi 0-8
+        #komen
         numbers = [
             ('7', 0, 0), ('8', 0, 1),
             ('5', 1, 0), ('6', 1, 1),
