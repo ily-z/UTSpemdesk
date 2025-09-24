@@ -70,12 +70,12 @@ class Calculator(QWidget):
         grid = QGridLayout()
         grid.setSpacing(10)
 
+        # Aliya: Mengubah tombol angka menjadi 0-8
         numbers = [
             ('7', 0, 0), ('8', 0, 1),
             ('5', 1, 0), ('6', 1, 1),
-            ('3', 2, 0), ('4', 2, 1),
-            ('1', 3, 0), ('2', 3, 1),
-            ('0', 4, 0, 1, 2)
+            ('2', 2, 0), ('4', 2, 1),
+            ('0', 3, 0), ('1', 3, 1),
         ]
 
         for item in numbers:
