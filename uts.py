@@ -2,12 +2,13 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QHBoxLayout, QGridLayout, QPushButton, QLineEdit,
-    QTabWidget, QMessageBox, QTextEdit
+    QTabWidget, QTextEdit
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QAction, QFont
 
 
+# ================================ KALKULATOR ================================
 class Calculator(QWidget):
     def __init__(self):
         super().__init__()
@@ -15,70 +16,61 @@ class Calculator(QWidget):
 
     def initUI(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(7, 7, 7, 7)  
-        main_layout.setSpacing(7)  
+        main_layout.setContentsMargins(7, 7, 7, 7)
+        main_layout.setSpacing(7)
 
-        # ================================
-        # KETENTUAN: LINEEDIT
-        # ================================
-        # Jejak perhitungan (atas) - LineEdit 1
+        # --- Display atas (history singkat) ---
         self.history_display = QLineEdit()
         self.history_display.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.history_display.setReadOnly(True)
-        self.history_display.setFixedHeight(23)  
-        self.history_display.setFont(QFont("Arial", 10))  
+        self.history_display.setFixedHeight(23)
+        self.history_display.setFont(QFont("Arial", 10))
         self.history_display.setStyleSheet("""
             QLineEdit {
                 background: #fafafa;
                 color: #444;
                 border: 1px solid #bbb;
-                border-radius: 4px;  
-                padding: 3px 5px;    
+                border-radius: 4px;
+                padding: 3px 5px;
             }
         """)
         main_layout.addWidget(self.history_display)
 
-        # Layar kalkulator utama (angka besar) - LineEdit 2
+        # --- Display utama ---
         self.display = QLineEdit()
         self.display.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.display.setReadOnly(True)
-        self.display.setFixedHeight(47)  
-        self.display.setFont(QFont("Arial", 16, QFont.Weight.Bold))  
+        self.display.setFixedHeight(47)
+        self.display.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         self.display.setStyleSheet("""
             QLineEdit {
                 background: #ffffff;
                 color: #000000;
                 border: 2px solid #888;
-                border-radius: 7px;  
-                padding: 7px;        
+                border-radius: 7px;
+                padding: 7px;
             }
         """)
         main_layout.addWidget(self.display)
 
-        # Kotak riwayat lengkap
+        # --- Log history penuh ---
         self.history_log = QTextEdit()
         self.history_log.setReadOnly(True)
-        self.history_log.setFixedHeight(80)  
+        self.history_log.setFixedHeight(80)
         self.history_log.setStyleSheet("""
             QTextEdit {
                 background: #fefefe;
                 border: 1px solid #ddd;
-                border-radius: 4px;  
+                border-radius: 4px;
                 color: #333;
             }
         """)
         main_layout.addWidget(self.history_log)
 
-        # ================================
-        # KETENTUAN: GRID LAYOUT 
-        # (Untuk tombol angka dan operator)
-        # ================================
+        # --- Grid tombol angka ---
         grid = QGridLayout()
-        grid.setSpacing(7)  
+        grid.setSpacing(7)
 
-        # ================================
-        # KETENTUAN: BUTTON DENGAN NOMOR SESUAI NIM (0-8)
-        # ================================
         numbers = [
             ('7', 0, 0), ('8', 0, 1),
             ('5', 1, 0), ('6', 1, 1),
@@ -86,30 +78,24 @@ class Calculator(QWidget):
             ('0', 3, 0), ('1', 3, 1),
         ]
 
-        for item in numbers:
-            if len(item) == 3:
-                text, row, col = item
-                rowspan, colspan = 1, 1
-            else:
-                text, row, col, rowspan, colspan = item
-
+        for text, row, col in numbers:
             btn = QPushButton(text)
-            btn.setFixedSize(53, 40)   
-            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))  
+            btn.setFixedSize(53, 40)
+            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
             btn.setStyleSheet("""
                 QPushButton {
                     background: #ffffff;
                     border: 2px solid #ccc;
-                    border-radius: 7px;  
+                    border-radius: 7px;
                 }
                 QPushButton:hover {
                     background: #f0f0f0;
                 }
             """)
-            btn.clicked.connect(lambda checked, t=text: self.add_to_display(t))
-            grid.addWidget(btn, row, col, rowspan, colspan)
+            btn.clicked.connect(lambda _, t=text: self.add_to_display(t))
+            grid.addWidget(btn, row, col)
 
-        # Tombol operator dalam grid
+        # --- Grid tombol operator ---
         operators = [
             ('+', 0, 2), ('-', 1, 2),
             ('*', 2, 2), ('/', 3, 2),
@@ -118,48 +104,38 @@ class Calculator(QWidget):
 
         for text, row, col in operators:
             btn = QPushButton(text)
-            btn.setFixedSize(53, 40)  
-            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))  
+            btn.setFixedSize(53, 40)
+            btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
             if text == "=":
-                btn.setStyleSheet("background:#4CAF50; color:white; border-radius:7px;")  
+                btn.setStyleSheet("background:#4CAF50; color:white; border-radius:7px;")
             else:
-                btn.setStyleSheet("background:#2196F3; color:white; border-radius:7px;")  
-            btn.clicked.connect(lambda checked, t=text: self.handle_operator(t))
+                btn.setStyleSheet("background:#2196F3; color:white; border-radius:7px;")
+            btn.clicked.connect(lambda _, t=text: self.handle_operator(t))
             grid.addWidget(btn, row, col)
 
         main_layout.addLayout(grid)
 
-        # ================================
-        # KETENTUAN: KOMBINASI HORIZONTAL LAYOUT
-        # (Untuk tombol tambahan: Info, Clear, Backspace)
-        # ================================
+        # --- Tombol bawah (Backspace saja, tanpa Clear) ---
         hbox = QHBoxLayout()
-        btn_info = QPushButton("Info")
-        btn_info.setStyleSheet("background:#ff9800; color:white; border-radius:7px;")  
-        btn_info.setFixedHeight(33)  
-        btn_info.clicked.connect(self.show_info)
 
-        btn_clear = QPushButton("Clear")
-        btn_clear.setStyleSheet("background:#f44336; color:white; border-radius:7px;")  
-        btn_clear.setFixedHeight(33)  
-        btn_clear.clicked.connect(self.clear_all)
+        self.btn_back = QPushButton("⌫")
+        self.btn_back.setStyleSheet("background:#9c27b0; color:white; border-radius:7px;")
+        self.btn_back.setFixedHeight(33)
 
-        btn_back = QPushButton("⌫")
-        btn_back.setStyleSheet("background:#9c27b0; color:white; border-radius:7px;")  
-        btn_back.setFixedHeight(33)  
-        btn_back.clicked.connect(self.backspace_display)
+        # Timer untuk long press
+        self.backspace_timer = QTimer()
+        self.backspace_timer.setSingleShot(True)
+        self.backspace_timer.timeout.connect(self.clear_all)
 
-        hbox.addWidget(btn_info)
-        hbox.addWidget(btn_clear)
-        hbox.addWidget(btn_back)
+        self.btn_back.pressed.connect(self.start_backspace_timer)
+        self.btn_back.released.connect(self.handle_backspace_release)
+
+        hbox.addWidget(self.btn_back)
         main_layout.addLayout(hbox)
 
-        # ================================
-        # KETENTUAN: KOMBINASI VERTICAL LAYOUT
-        # (Layout utama yang menampung semua komponen)
-        # ================================
         self.setLayout(main_layout)
 
+    # ================== FUNCTION ==================
     def add_to_display(self, text):
         self.display.setText(self.display.text() + text)
         self.history_display.setText(self.display.text())
@@ -170,7 +146,6 @@ class Calculator(QWidget):
                 expression = self.display.text()
                 result = str(eval(expression))
 
-                # --- sinkronisasi riwayat ---
                 if self.history_log.toPlainText():
                     lines = self.history_log.toPlainText().split("\n")
                     last_line = lines[-1]
@@ -202,32 +177,70 @@ class Calculator(QWidget):
             self.display.setText(new_text)
             self.history_display.setText(new_text)
 
-    def show_info(self):
-        QMessageBox.information(
-            self,
-            "Info",
-            "Kalkulator Desktop - Angka 0-8"
+    def start_backspace_timer(self):
+        # mulai timer (1 detik)
+        self.backspace_timer.start(1000)
+
+    def handle_backspace_release(self):
+        if self.backspace_timer.isActive():
+            # kalau dilepas sebelum 1 detik -> backspace
+            self.backspace_timer.stop()
+            self.backspace_display()
+        # kalau ditahan >=1 detik -> clear_all otomatis
+
+
+# ================================ TAB MAHASISWA ================================
+class MahasiswaTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        layout = QVBoxLayout()
+
+        daftar = (
+            "220411100108 Umar Muchtar Khaidzar\n"
+            "220411100181 Muhammad Ilyas Zaini\n"
+            "230411100102 Tria Desy Nurhaliza\n"
+            "230411100156 Kamila Mulya Fadila\n"
+            "230411100157 Aliya Zulfa Syafitri\n"
+            "230411100184 Nadiatul Khoir"
         )
 
+        text_widget = QTextEdit()
+        text_widget.setReadOnly(True)
+        text_widget.setText(daftar)
+        text_widget.setStyleSheet("""
+            QTextEdit {
+                background: #fdfdfd;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 8px;
+                font-size: 11pt;
+                font-family: Arial;
+            }
+        """)
 
+        layout.addWidget(text_widget)
+        self.setLayout(layout)
+
+
+# ================================ MAIN WINDOW ================================
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Kalkulator Desktop - PyQt6")
-        self.setGeometry(300, 200, 233, 400)  
+        self.setGeometry(300, 200, 300, 400)
 
         self.calculator = Calculator()
-        
-        # ================================
-        # KETENTUAN: TAB WIDGET
-        # ================================
+        self.mahasiswa_tab = MahasiswaTab()
+
         tabs = QTabWidget()
         tabs.addTab(self.calculator, "Kalkulator")
+        tabs.addTab(self.mahasiswa_tab, "Mahasiswa")
         self.setCentralWidget(tabs)
 
-        # ================================
-        # KETENTUAN: MENU DENGAN OPERASI ARITMATIKA
-        # ================================
+        # Menu Bar
         menubar = self.menuBar()
         operasi_menu = menubar.addMenu("Operasi Matematika")
 
@@ -246,26 +259,8 @@ class MainWindow(QMainWindow):
         for action in [tambah, kurang, kali, bagi, sama_dengan]:
             operasi_menu.addAction(action)
 
-        help_menu = menubar.addMenu("Help")
-        about_action = QAction("Tentang", self)
 
-        about_text = (
-            "Aplikasi Kalkulator Desktop - PyQt6\n\n"
-            "Dibuat oleh:\n"
-            "- 220411100108 Umar Muchtar Khaidzar\n"
-            "- 220411100181 Muhammad Ilyas Zaini\n"
-            "- 230411100102 Tria Desy Nurhaliza\n"
-            "- 230411100156 Kamila Mulya Fadila\n"
-            "- 230411100157 Aliya Zulfa Syafitri\n"
-            "- 230411100184 Nadiatul Khoir"
-        )
-
-        about_action.triggered.connect(
-            lambda: QMessageBox.information(self, "Tentang", about_text)
-        )
-        help_menu.addAction(about_action)
-
-
+# ================================ RUN APP ================================
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
